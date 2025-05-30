@@ -18,8 +18,13 @@ import Distribution.Client.ProjectOrchestration
 import Distribution.Client.ScriptUtils
 import Distribution.Client.Setup (GlobalFlags, InstallFlags (..), defaultGlobalFlags)
 import Distribution.Simple (OptimisationLevel (NoOptimisation))
-import Distribution.Simple.Setup (ConfigFlags (..), Flag (..), HaddockFlags (..))
+import Distribution.Simple.Setup
+    ( ConfigFlags(..),
+      Flag(..),
+      HaddockFlags(..),
+      CommonSetupFlags(..) )
 import Distribution.Simple.Utils (die')
+import Distribution.Utils.Path (makeSymbolicPath)
 import qualified Distribution.Verbosity as Verbosity
 import Options.Applicative
 import System.FilePath ((</>))
@@ -111,9 +116,10 @@ readContext GlobalOptions {..} targetStrings =
       defaultFlags
         { configFlags =
             (configFlags defaultFlags)
-              { configOptimization = Flag NoOptimisation,
-                configDistPref = Flag _globalOptions_builddir
-              },
+                { configOptimization = Flag NoOptimisation
+                , configCommonFlags = (configCommonFlags (configFlags defaultFlags))
+                                          { setupDistPref = Flag (makeSymbolicPath _globalOptions_builddir) }
+                },
           haddockFlags =
             (haddockFlags defaultFlags)
               { haddockHoogle = Flag True,

@@ -59,6 +59,7 @@ import System.Directory
 import System.FilePath
 import System.IO.Error (isDoesNotExistError)
 import Prelude hiding (log)
+import Distribution.Utils.Path (makeSymbolicPath)
 
 data Log
   = LogBadInstallPlan UnitId (Maybe (InstallPlan.GenericPlanPackage InstalledPackageInfo ElaboratedConfiguredPackage))
@@ -126,7 +127,7 @@ action logger globalOptions (Command targets) = do
 symlinkLocalPackages :: Logger Log -> [FilePath] -> FilePath -> IO [(String, LocalBuildInfo)]
 symlinkLocalPackages logger pkgsPath destDir = do
   fmap catMaybes . forM pkgsPath $ \pkgPath -> runMaybeT $ do
-    lbiEither <- liftIO $ tryGetPersistBuildConfig pkgPath
+    lbiEither <- liftIO $ tryGetPersistBuildConfig Nothing (makeSymbolicPath pkgPath)
     lbi <- MaybeT $ case lbiEither of
       Left configStateFileErr -> do
         logWith logger Error $ LogCanNotReadSetupConfig pkgPath configStateFileErr
